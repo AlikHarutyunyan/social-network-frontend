@@ -14,6 +14,7 @@ class App extends React.Component {
             token: null, name: null, avatar: null, userId: null, following: ["alik"]
         }
     }
+    serverUrl = "http://localhost:8080";
 
     componentDidMount() {
         document.title = "Social Media App";
@@ -23,40 +24,37 @@ class App extends React.Component {
         return (name === this.state.user.name || this.state.user.following.includes(name));
     }
 
-    handleImageChange = (url) => {
-        return axios.post("http://localhost:8080/updateImage", {
-            imageUrl: url, id: this.state.user.userId
-        }, {
+    createHeaders = () => {
+        return {
             headers: {
-                'Authorization': `${this.state.user.token}`
+                'Authorization':
+                `${this.state.user.token}`
             }
-        }).catch(err => {
+        }
+    }
+
+    handleImageChange = (url) => {
+        return axios.post(this.serverUrl + "/updateImage", {
+            imageUrl: url, id: this.state.user.userId
+        }, this.createHeaders()).catch(err => {
             console.error(err)
         })
     }
 
     handleFeed = () => {
         return this.getFollowings("Followes").then(r => {
-            return axios.post("http://localhost:8080/feed", {
+            return axios.post(this.serverUrl + "/feed", {
                 names: [...r.data, this.state.user.name]
-            }, {
-                headers: {
-                    'Authorization': `${this.state.user.token}`
-                }
-            }).catch(err => {
+            },  this.createHeaders()).catch(err => {
                 console.error(err)
             })
         })
     }
 
     handlePublish = (text) => {
-        return axios.post("http://localhost:8080/publish", {
+        return axios.post(this.serverUrl+"/publish", {
             text: text, userId: this.state.user.userId
-        }, {
-            headers: {
-                'Authorization': `${this.state.user.token}`
-            }
-        }).catch(err => {
+        },  this.createHeaders()).catch(err => {
             console.error(err)
         })
     }
@@ -78,23 +76,15 @@ class App extends React.Component {
     }
 
     getFollowings = (keyword) => {
-        return axios.get("http://localhost:8080/getUser" + keyword + "/" + this.state.user.userId, {
-            headers: {
-                'Authorization': `${this.state.user.token}`
-            }
-        }).catch(err => {
+        return axios.get(this.serverUrl + "/getUser" + keyword + "/" + this.state.user.userId,  this.createHeaders()).catch(err => {
             console.error(err);
         })
     }
 
     handleFollow = (name) => {
-        axios.post("http://localhost:8080/follow", {
+        axios.post(this.serverUrl + "/follow", {
             followerId: this.state.user.userId, followeName: name
-        }, {
-            headers: {
-                'Authorization': `${this.state.user.token}`
-            }
-        }).then(r => {
+        },  this.createHeaders()).then(r => {
             this.setState(prevState => ({
                 user: {
                     ...prevState.user, following: [...prevState.user.following, name]
@@ -114,11 +104,7 @@ class App extends React.Component {
     }
 
     handleSearch = (name) => {
-        return axios.post("http://localhost:8080/search?name=" + name, null, {
-            headers: {
-                'Authorization': `${this.state.user.token}`
-            }
-        }).catch(err => {
+        return axios.post(this.serverUrl + "/search?name=" + name, null,  this.createHeaders()).catch(err => {
             console.error(err);
         })
     }
